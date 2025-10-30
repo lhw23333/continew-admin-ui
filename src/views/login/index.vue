@@ -6,6 +6,9 @@
       <span>{{ title }}</span>
     </h3>
 
+    <!-- 多语言切换的 Select 下拉选择 -->
+    <LanguageSelect/>
+
     <a-row align="stretch" class="login-box">
       <a-col :xs="0" :sm="12" :md="13">
         <div class="login-left">
@@ -100,6 +103,7 @@ import { useAppStore } from '@/stores'
 import { useTenantStore } from '@/stores/modules/tenant'
 import { useDevice } from '@/hooks'
 import { getTenantIdByDomain, getTenantStatus } from '@/apis'
+import LanguageSelect from 'i18n-jsautotranslate/ArcoDesign/Vue3/LanguageSelect.vue';
 
 defineOptions({ name: 'Login' })
 
@@ -541,6 +545,14 @@ onMounted(() => {
         display: flex;
       }
     }
+  }
+
+  //多语言切换
+  .LanguageSelect {
+    position: fixed;
+    top: 20px;
+    right: 80px;
+    z-index: 999;
   }
 }
 </style>

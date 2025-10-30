@@ -14,6 +14,7 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "i18n-jsautotranslate": "3.18.63",
     "@amap/amap-jsapi-loader": "^1.0.1",
     "@arco-design/color": "^0.4.0",
     "@arco-themes/vue-gi-demo": "^0.0.51",

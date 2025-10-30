@@ -27,6 +27,9 @@ import directives from './directives'
 // 状态管理
 import pinia from '@/stores'
 
+// 多语言切换
+import {translateJsVueUseModel} from './utils/translate' // 导入translate插件
+
 // 对特定组件进行默认配置
 Card.props.bordered = false
 
@@ -39,5 +42,6 @@ app.use(pinia)
 app.use(ArcoVue)
 app.use(ArcoVueIcon)
 app.use(directives)
+//app.use(translateJsVueUseModel)   //去掉注释，即可启用多语言切换能力。 具体多语言切换的设置，位于 /src/utils/translate.ts
 
 app.mount('#app')
