@@ -37,9 +37,11 @@ export interface FileTask {
 
 /**
  * useMultipartUploader - 通用分片上传 hooks
+ * @param props                     上传并发配置
  * @param props.maxConcurrentFiles   最大同时上传文件数（全局并发）
  * @param props.maxConcurrentChunks  每个文件分片上传最大并发数
  * @param props.maxUploadWorkers     最大上传Worker数量（基于CPU核心数）
+ * @param props.rootPath             上传根路径
  * @returns 上传相关响应式状态与操作方法
  */
 export function useMultipartUploader(props: {
