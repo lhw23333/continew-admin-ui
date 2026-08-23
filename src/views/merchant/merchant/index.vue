@@ -82,6 +82,12 @@
           <a-dropdown v-if="hasRowMoreAction(record)" trigger="click">
             <a-link>更多<icon-down /></a-link>
             <template #content>
+              <a-doption
+                v-if="can(record, 'START_ONBOARDING', 'merchant:onboarding:create')"
+                @click="onboardingWizardRef?.onOpen(record)"
+              >
+                发起入网
+              </a-doption>
               <a-doption v-if="can(record, 'VIEW', 'merchant:merchant:get')" @click="channelDrawerRef?.onOpen(record)">渠道与定价</a-doption>
               <a-doption
                 v-if="can(record, 'CHANGE_LIFECYCLE', 'merchant:merchant:lifecycle')"
@@ -98,6 +104,7 @@
     <MerchantFormModal ref="formModalRef" @save-success="refresh" />
     <LifecycleModal ref="lifecycleModalRef" @save-success="refresh" />
     <ChannelSummaryDrawer ref="channelDrawerRef" />
+    <OnboardingWizard ref="onboardingWizardRef" @submitted="refresh" />
   </GiPageLayout>
 </template>
 
@@ -108,6 +115,7 @@ import ChannelSummaryDrawer from './ChannelSummaryDrawer.vue'
 import LifecycleModal from './LifecycleModal.vue'
 import MerchantFormModal from './MerchantFormModal.vue'
 import { channelStatusColor, hasServerAction, merchantStatusMeta, merchantTypeLabel } from './utils'
+import OnboardingWizard from '@/views/merchant/onboarding/OnboardingWizard.vue'
 import type { MerchantAction, MerchantQuery, MerchantResp } from '@/apis/merchant/merchant'
 import { listMerchant } from '@/apis/merchant/merchant'
 import { useResetReactive, useTable } from '@/hooks'
@@ -117,6 +125,7 @@ import has from '@/utils/has'
 defineOptions({ name: 'MerchantMerchant' })
 
 const [queryForm, resetForm] = useResetReactive<MerchantQuery>({})
+const onboardingWizardRef = ref<InstanceType<typeof OnboardingWizard>>()
 const createdRange = ref<string[]>([])
 const toApiDateTime = (value?: string) => value ? dayjs(value).format('YYYY-MM-DDTHH:mm:ss') : undefined
 const { tableData: dataList, loading, pagination, search, refresh } = useTable<MerchantResp>((page) => listMerchant({
@@ -130,7 +139,8 @@ const can = (record: MerchantResp, action: MerchantAction, permission: string) =
   return has.hasPerm(permission) && hasServerAction(record.actions, action)
 }
 const hasRowMoreAction = (record: MerchantResp) => {
-  return can(record, 'VIEW', 'merchant:merchant:get')
+  return can(record, 'START_ONBOARDING', 'merchant:onboarding:create')
+    || can(record, 'VIEW', 'merchant:merchant:get')
     || can(record, 'CHANGE_LIFECYCLE', 'merchant:merchant:lifecycle')
 }
 

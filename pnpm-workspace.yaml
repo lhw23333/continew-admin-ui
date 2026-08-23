@@ -1,0 +1,21 @@
+allowBuilds:
+  '@vue-office/docx': true
+  '@vue-office/excel': true
+  '@vue-office/pdf': true
+  core-js: true
+  es5-ext: true
+  esbuild: true
+  vue-demi: true
+  vue-echarts: true
+packages:
+  - .
+
+onlyBuiltDependencies:
+  - '@vue-office/docx'
+  - '@vue-office/excel'
+  - '@vue-office/pdf'
+  - core-js
+  - es5-ext
+  - esbuild
+  - vue-demi
+  - vue-echarts
