@@ -109,6 +109,12 @@ async function onOpen(row: WorkflowTaskView) {
   await load()
 }
 
+async function onOpenTaskId(id: string) {
+  taskId.value = id
+  visible.value = true
+  await load()
+}
+
 async function claim() {
   await claimWorkflowTask(taskId.value)
   Message.success('任务已认领')
@@ -130,7 +136,7 @@ async function actionSuccess() {
   }
 }
 
-defineExpose({ onOpen })
+defineExpose({ onOpen, onOpenTaskId })
 </script>
 
 <style scoped>

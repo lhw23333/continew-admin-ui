@@ -92,6 +92,9 @@
           <span class="time-label">发送时间：</span>
           <span class="time-value">{{ currentMessage?.createTime }}</span>
         </div>
+        <a-button v-if="currentMessage?.path" type="primary" size="small" @click="goToMessagePath">
+          前往处理
+        </a-button>
       </div>
     </div>
   </a-modal>
@@ -101,6 +104,7 @@
 import type { TableInstance } from '@arco-design/web-vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { useWindowSize } from '@vueuse/core'
+import { useRouter } from 'vue-router'
 import {
   type MessageQuery,
   type MessageResp,
@@ -117,6 +121,7 @@ import mittBus from '@/utils/mitt'
 defineOptions({ name: 'UserMyMessage' })
 
 const { width } = useWindowSize()
+const router = useRouter()
 const { message_type_enum } = useDict('message_type_enum')
 
 const queryForm = reactive<MessageQuery>({
@@ -201,6 +206,12 @@ const showMessageDetail = async (record: any) => {
   record.isRead = currentMessage.value?.isRead
   onSuccess()
 }
+
+const goToMessagePath = async () => {
+  if (!currentMessage.value?.path || !currentMessage.value.path.startsWith('/')) return
+  messageDetailVisible.value = false
+  await router.push(currentMessage.value.path)
+}
 </script>
 
 <style scoped lang="scss">
@@ -242,6 +253,11 @@ const showMessageDetail = async (record: any) => {
   }
 
   .message-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
     .time-info {
       display: flex;
       align-items: center;

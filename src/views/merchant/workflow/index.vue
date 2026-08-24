@@ -44,6 +44,7 @@
 <script setup lang="ts">
 import type { TableInstance } from '@arco-design/web-vue'
 import { Message } from '@arco-design/web-vue'
+import { useRoute } from 'vue-router'
 import TaskDetailDrawer from './TaskDetailDrawer.vue'
 import { isOverdue, taskStateMeta } from './utils'
 import type { WorkflowTaskQuery, WorkflowTaskView } from '@/apis/merchant/workflow'
@@ -53,7 +54,9 @@ import { useResetReactive, useTable } from '@/hooks'
 defineOptions({ name: 'MerchantWorkflow' })
 
 type TabKey = 'todo' | 'claimed' | 'done'
-const activeTab = ref<TabKey>('todo')
+const route = useRoute()
+const routeTab = String(route.query.tab || '')
+const activeTab = ref<TabKey>(['todo', 'claimed', 'done'].includes(routeTab) ? routeTab as TabKey : 'todo')
 const [queryForm, resetForm] = useResetReactive<WorkflowTaskQuery>({})
 const apiByTab = { todo: listTodoTasks, claimed: listClaimedTasks, done: listDoneTasks }
 const { tableData: dataList, loading, pagination, search, refresh } = useTable<WorkflowTaskView>(
@@ -88,6 +91,13 @@ async function claim(record: WorkflowTaskView) {
 }
 
 const detailDrawerRef = ref<InstanceType<typeof TaskDetailDrawer>>()
+
+onMounted(async () => {
+  const taskId = typeof route.query.taskId === 'string' ? route.query.taskId : ''
+  if (taskId) {
+    await detailDrawerRef.value?.onOpenTaskId(taskId)
+  }
+})
 </script>
 
 <style scoped>
