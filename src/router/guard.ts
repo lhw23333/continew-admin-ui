@@ -88,7 +88,7 @@ export const setupRouterGuard = (router: Router) => {
     if (getToken()) {
       if (to.path === '/login') {
         // 如果已经登录，并准备进入 Login 页面，则重定向到主页
-        next()
+        next({ path: '/', replace: true })
       } else {
         if (!hasRouteFlag) {
           try {

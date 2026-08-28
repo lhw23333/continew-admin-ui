@@ -245,7 +245,11 @@
           <a-form :model="settlementForm" layout="vertical" @change="markDirty">
             <div class="form-grid">
               <a-form-item label="结算模式" required>
-                <a-segmented v-model="settlementForm.mode" :options="settlementModeOptions" />
+                <a-radio-group v-model="settlementForm.mode" type="button">
+                  <a-radio v-for="option in settlementModeOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </a-radio>
+                </a-radio-group>
               </a-form-item>
               <a-form-item label="账户名称" required><a-input v-model="settlementForm.accountHolderName" :max-length="200" /></a-form-item>
               <a-form-item label="银行编码" required><a-input v-model="settlementForm.bankCode" :max-length="64" /></a-form-item>
@@ -380,6 +384,7 @@ import { Message, Modal } from '@arco-design/web-vue'
 import { useWindowSize } from '@vueuse/core'
 import { type SaveState, completeStep, createIdempotencyKey, evidenceTypeLabel, firstIncompleteStep, isDraftConflict } from './state'
 import type { MerchantResp } from '@/apis/merchant/merchant'
+import { getMerchant } from '@/apis/merchant/merchant'
 import type {
   EligibleChannel,
   EvidenceAttachment,
@@ -580,9 +585,13 @@ async function open(record: MerchantResp) {
   visible.value = true
   loading.value = true
   try {
-    const { data: channels } = await listEligibleChannels(record.id)
+    const [{ data: channels }, { data: latestMerchant }] = await Promise.all([
+      listEligibleChannels(record.id),
+      getMerchant(record.id),
+    ])
+    merchant.value = latestMerchant
     eligibleChannels.value = channels
-    const existing = record.channels.find((item) => item.applicationStatus === 'DRAFT' && item.applicationId)
+    const existing = latestMerchant.channels.find((item) => item.applicationStatus === 'DRAFT' && item.applicationId)
     if (existing) {
       const { data } = await loadDraft(record.id, existing.applicationId)
       applyDraft(data)
@@ -610,7 +619,7 @@ async function startDraft() {
 
 async function persistProgress(step: number) {
   if (!merchant.value || !draft.value) return false
-  const completedSteps = completeStep(draft.value.completedSteps, step)
+  const completedSteps = completeStep(draft.value.completedSteps.filter((completedStep) => completedStep <= step), step)
   const { data } = await saveDraftProgress(merchant.value.id, draft.value.applicationId, step, completedSteps, draft.value.rowVersion)
   applyDraft(data)
   return true
