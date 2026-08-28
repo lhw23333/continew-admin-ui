@@ -90,6 +90,18 @@
               </a-doption>
               <a-doption v-if="can(record, 'VIEW', 'merchant:merchant:get')" @click="channelDrawerRef?.onOpen(record)">渠道与定价</a-doption>
               <a-doption
+                v-if="can(record, 'ADJUST_LIMIT', 'merchant:limit:create')"
+                @click="limitAdjustmentModalRef?.onOpen(record)"
+              >
+                调整限额
+              </a-doption>
+              <a-doption
+                v-if="can(record, 'VIEW_LIMIT_HISTORY', 'merchant:limit:list')"
+                @click="limitHistoryDrawerRef?.onOpen(record)"
+              >
+                限额历史 / 审核
+              </a-doption>
+              <a-doption
                 v-if="can(record, 'CHANGE_LIFECYCLE', 'merchant:merchant:lifecycle')"
                 @click="lifecycleModalRef?.onOpen(record)"
               >
@@ -105,6 +117,8 @@
     <LifecycleModal ref="lifecycleModalRef" @save-success="refresh" />
     <ChannelSummaryDrawer ref="channelDrawerRef" />
     <OnboardingWizard ref="onboardingWizardRef" @submitted="refresh" />
+    <LimitAdjustmentModal ref="limitAdjustmentModalRef" @success="refresh" />
+    <LimitHistoryDrawer ref="limitHistoryDrawerRef" />
   </GiPageLayout>
 </template>
 
@@ -113,6 +127,8 @@ import type { TableInstance } from '@arco-design/web-vue'
 import dayjs from 'dayjs'
 import ChannelSummaryDrawer from './ChannelSummaryDrawer.vue'
 import LifecycleModal from './LifecycleModal.vue'
+import LimitAdjustmentModal from './LimitAdjustmentModal.vue'
+import LimitHistoryDrawer from './LimitHistoryDrawer.vue'
 import MerchantFormModal from './MerchantFormModal.vue'
 import { channelStatusColor, hasServerAction, merchantStatusMeta, merchantTypeLabel } from './utils'
 import OnboardingWizard from '@/views/merchant/onboarding/OnboardingWizard.vue'
@@ -142,6 +158,8 @@ const hasRowMoreAction = (record: MerchantResp) => {
   return can(record, 'START_ONBOARDING', 'merchant:onboarding:create')
     || can(record, 'VIEW', 'merchant:merchant:get')
     || can(record, 'CHANGE_LIFECYCLE', 'merchant:merchant:lifecycle')
+    || can(record, 'ADJUST_LIMIT', 'merchant:limit:create')
+    || can(record, 'VIEW_LIMIT_HISTORY', 'merchant:limit:list')
 }
 
 const columns: TableInstance['columns'] = [
@@ -163,7 +181,7 @@ const columns: TableInstance['columns'] = [
     width: 190,
     align: 'center',
     fixed: !isMobile() ? 'right' : undefined,
-    show: has.hasPermOr(['merchant:merchant:get', 'merchant:merchant:update', 'merchant:merchant:lifecycle']),
+    show: has.hasPermOr(['merchant:merchant:get', 'merchant:merchant:update', 'merchant:merchant:lifecycle', 'merchant:limit:create', 'merchant:limit:list']),
   },
 ]
 
@@ -176,6 +194,8 @@ const reset = () => {
 const formModalRef = ref<InstanceType<typeof MerchantFormModal>>()
 const lifecycleModalRef = ref<InstanceType<typeof LifecycleModal>>()
 const channelDrawerRef = ref<InstanceType<typeof ChannelSummaryDrawer>>()
+const limitAdjustmentModalRef = ref<InstanceType<typeof LimitAdjustmentModal>>()
+const limitHistoryDrawerRef = ref<InstanceType<typeof LimitHistoryDrawer>>()
 </script>
 
 <style scoped>
