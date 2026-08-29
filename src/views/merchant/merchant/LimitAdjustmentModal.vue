@@ -66,7 +66,7 @@
         <a-grid-item v-if="preview" :span="2">
           <a-card title="确认预览" :bordered="true" class="preview-card">
             <a-descriptions :column="3" bordered size="small">
-              <a-descriptions-item label="输入金额">{{ amount(preview.enteredLimit) }}</a-descriptions-item>
+              <a-descriptions-item label="输入金额">{{ amount(preview.requestedLimit) }}</a-descriptions-item>
               <a-descriptions-item label="归一化金额">
                 <strong>{{ amount(preview.normalizedLimit) }}</strong>
                 <a-tag v-if="preview.changed" color="orange" class="ml-2">已向上取整</a-tag>
@@ -115,7 +115,7 @@ const form = reactive({
   reason: '',
 })
 
-const eligibleChannels = computed(() => merchant.value?.channels.filter((item) => item.channelFinalStatus === 'SUCCEEDED') || [])
+const eligibleChannels = computed(() => merchant.value?.channels.filter((item) => item.applicationStatus === 'SUCCEEDED' || item.channelFinalStatus === 'SUCCEEDED') || [])
 const amount = (value?: number) => value == null ? '-' : `${Number(value).toFixed(2)} ${form.currency}`
 
 function onOpen(record: MerchantResp) {
@@ -154,7 +154,7 @@ async function loadPreview() {
 async function submit() {
   const errors = await formRef.value?.validate()
   if (errors || !merchant.value) return false
-  if (!preview.value || preview.value.enteredLimit !== form.requestedLimit) {
+  if (!preview.value || preview.value.requestedLimit !== form.requestedLimit) {
     Message.warning('请先重新校验并确认归一化预览')
     return false
   }
@@ -164,7 +164,7 @@ async function submit() {
       channelCode: preview.value.channelCode,
       platformCode: preview.value.platformCode,
       currency: preview.value.currency,
-      requestedLimit: preview.value.enteredLimit,
+      requestedLimit: preview.value.requestedLimit,
       confirmedNormalizedLimit: preview.value.normalizedLimit,
       confirmedPolicyVersion: preview.value.policyVersion,
       reason: form.reason.trim(),

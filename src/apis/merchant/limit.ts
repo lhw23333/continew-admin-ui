@@ -93,10 +93,11 @@ export interface LimitAdjustmentPreviewReq {
 }
 
 export interface LimitAdjustmentPreview {
+  merchantId: string
   channelCode: string
   platformCode: string
   currency: string
-  enteredLimit: number
+  requestedLimit: number
   normalizedLimit: number
   changed: boolean
   minimumLimit: number
