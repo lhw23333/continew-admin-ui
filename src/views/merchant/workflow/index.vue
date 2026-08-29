@@ -33,7 +33,7 @@
       <template #action="{ record }">
         <a-space>
           <a-link v-permission="['workflow:task:get']" @click="detailDrawerRef?.onOpen(record)">详情</a-link>
-          <a-link v-if="record.task.state === 'TODO'" v-permission="['workflow:task:claim']" @click="claim(record)">认领</a-link>
+          <a-link v-if="canClaim(record)" v-permission="['workflow:task:claim']" @click="claim(record)">认领</a-link>
         </a-space>
       </template>
     </GiTable>
@@ -46,15 +46,17 @@ import type { TableInstance } from '@arco-design/web-vue'
 import { Message } from '@arco-design/web-vue'
 import { useRoute } from 'vue-router'
 import TaskDetailDrawer from './TaskDetailDrawer.vue'
-import { isOverdue, taskStateMeta } from './utils'
+import { canClaimTask, isOverdue, taskStateMeta } from './utils'
 import type { WorkflowTaskQuery, WorkflowTaskView } from '@/apis/merchant/workflow'
 import { claimWorkflowTask, listClaimedTasks, listDoneTasks, listTodoTasks } from '@/apis/merchant/workflow'
 import { useResetReactive, useTable } from '@/hooks'
+import { useUserStore } from '@/stores'
 
 defineOptions({ name: 'MerchantWorkflow' })
 
 type TabKey = 'todo' | 'claimed' | 'done'
 const route = useRoute()
+const userStore = useUserStore()
 const routeTab = String(route.query.tab || '')
 const activeTab = ref<TabKey>(['todo', 'claimed', 'done'].includes(routeTab) ? routeTab as TabKey : 'todo')
 const [queryForm, resetForm] = useResetReactive<WorkflowTaskQuery>({})
@@ -82,6 +84,10 @@ function changeTab() {
 function reset() {
   resetForm()
   search()
+}
+
+function canClaim(record: WorkflowTaskView) {
+  return canClaimTask(record.task, record.business.applicantUserId, userStore.userInfo.id)
 }
 
 async function claim(record: WorkflowTaskView) {

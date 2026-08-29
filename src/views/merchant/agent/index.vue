@@ -23,7 +23,7 @@
         </a-space>
       </template>
       <template #toolbar-right>
-        <a-button v-permission="['merchant:agent:create']" type="primary" @click="formModalRef?.onAdd()">
+        <a-button v-if="isBusinessTenant" v-permission="['merchant:agent:create']" type="primary" @click="formModalRef?.onAdd()">
           <template #icon><icon-plus /></template>新增直属代理商
         </a-button>
       </template>
@@ -81,11 +81,14 @@ import DefaultsDrawer from './DefaultsDrawer.vue'
 import type { AgentQuery, AgentResp } from '@/apis/merchant/agent'
 import { listAgent } from '@/apis/merchant/agent'
 import { useResetReactive, useTable } from '@/hooks'
+import { useTenantStore } from '@/stores/modules/tenant'
 import { isMobile } from '@/utils'
 import has from '@/utils/has'
 
 defineOptions({ name: 'MerchantAgent' })
 
+const tenantStore = useTenantStore()
+const isBusinessTenant = computed(() => Number(tenantStore.tenantId) > 0)
 const [queryForm, resetForm] = useResetReactive<AgentQuery>({})
 const { tableData: dataList, loading, pagination, search, refresh } = useTable<AgentResp>(
   (page) => listAgent({ ...queryForm, ...page }),

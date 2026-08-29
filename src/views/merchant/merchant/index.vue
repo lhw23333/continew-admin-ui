@@ -42,7 +42,7 @@
         </a-space>
       </template>
       <template #toolbar-right>
-        <a-button v-permission="['merchant:merchant:create']" type="primary" @click="formModalRef?.onAdd()">
+        <a-button v-if="isBusinessTenant" v-permission="['merchant:merchant:create']" type="primary" @click="formModalRef?.onAdd()">
           <template #icon><icon-plus /></template>新增商户
         </a-button>
       </template>
@@ -135,11 +135,14 @@ import OnboardingWizard from '@/views/merchant/onboarding/OnboardingWizard.vue'
 import type { MerchantAction, MerchantQuery, MerchantResp } from '@/apis/merchant/merchant'
 import { listMerchant } from '@/apis/merchant/merchant'
 import { useResetReactive, useTable } from '@/hooks'
+import { useTenantStore } from '@/stores/modules/tenant'
 import { isMobile } from '@/utils'
 import has from '@/utils/has'
 
 defineOptions({ name: 'MerchantMerchant' })
 
+const tenantStore = useTenantStore()
+const isBusinessTenant = computed(() => Number(tenantStore.tenantId) > 0)
 const [queryForm, resetForm] = useResetReactive<MerchantQuery>({})
 const onboardingWizardRef = ref<InstanceType<typeof OnboardingWizard>>()
 const createdRange = ref<string[]>([])

@@ -11,6 +11,10 @@ export function isOverdue(task: WorkflowTask, now = dayjs()) {
   return !!task.dueTime && task.state !== 'DONE' && dayjs(task.dueTime).isBefore(now)
 }
 
+export function canClaimTask(task: WorkflowTask, applicantUserId: string, currentUserId: string) {
+  return task.state === 'TODO' && applicantUserId !== currentUserId
+}
+
 export function availableReviewActions(task: WorkflowTask): ReviewAction[] {
   if (task.state !== 'CLAIMED') return []
   if (task.taskDefinitionKey === 'supplementTask') return ['RESUBMIT']

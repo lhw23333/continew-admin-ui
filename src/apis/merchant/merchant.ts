@@ -54,6 +54,23 @@ export interface MerchantChannelSummary {
   createTime: string
 }
 
+export interface OnboardingChannelExecutionResult {
+  applicationId: string
+  businessSerial: string
+  channelRequestId?: string
+  operationStatus: 'ACCEPTED' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED' | 'REJECTED' | 'UNCERTAIN'
+  state: {
+    reportingStatus: string
+    signingStatus: string
+    cardBindingStatus: string
+    reserveAccountStatus: string
+    finalStatus: string
+  }
+  finalTerminal: boolean
+  safeMessage?: string
+  resultTime: string
+}
+
 export interface MerchantResp {
   id: string
   merchantNo: string
@@ -186,4 +203,12 @@ export function updateMerchantProfile(merchantId: string, data: MerchantProfileU
 
 export function changeMerchantLifecycle(merchantId: string, data: MerchantLifecycleReq) {
   return http.patch<MerchantProfileView>(`${BASE_URL}/${merchantId}/lifecycle`, data)
+}
+
+export function submitOnboardingChannel(merchantId: string, applicationId: string) {
+  return http.post<OnboardingChannelExecutionResult>(`${BASE_URL}/${merchantId}/onboarding/${applicationId}/channel/submit`)
+}
+
+export function queryOnboardingChannel(merchantId: string, applicationId: string) {
+  return http.post<OnboardingChannelExecutionResult>(`${BASE_URL}/${merchantId}/onboarding/${applicationId}/channel/query`)
 }

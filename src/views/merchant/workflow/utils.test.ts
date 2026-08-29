@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import dayjs from 'dayjs'
-import { availableReviewActions, isOverdue } from './utils'
+import { availableReviewActions, canClaimTask, isOverdue } from './utils'
 import type { WorkflowTask } from '@/apis/merchant/workflow'
 
 const task = (patch: Partial<WorkflowTask> = {}): WorkflowTask => ({
@@ -25,6 +25,11 @@ describe('workflow task ui policy', () => {
 
   it('does not expose review actions before claim', () => {
     expect(availableReviewActions(task({ state: 'TODO' }))).toEqual([])
+  })
+
+  it('prevents the applicant from claiming their review task', () => {
+    expect(canClaimTask(task({ state: 'TODO' }), 'user-1', 'user-1')).toBe(false)
+    expect(canClaimTask(task({ state: 'TODO' }), 'user-1', 'reviewer-2')).toBe(true)
   })
 
   it('marks unfinished tasks overdue using the due time', () => {

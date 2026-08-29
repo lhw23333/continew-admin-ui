@@ -13,7 +13,7 @@ export function getErrorMessage(error: unknown, fallback = '操作失败，请�
 export function toApiDateTime(value?: string) {
   if (!value) return undefined
   const parsed = dayjs(value)
-  return parsed.isValid() ? parsed.format('YYYY-MM-DDTHH:mm:ss') : value
+  return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm:ss') : value
 }
 
 export function defaultEffectiveTime() {

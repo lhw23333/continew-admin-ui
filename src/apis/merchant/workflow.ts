@@ -28,6 +28,7 @@ export interface WorkflowTaskBusinessSummary {
   applicationId: string
   applicationNo: string
   businessVersion: number
+  applicantUserId: string
   merchantId: string
   merchantNo: string
   merchantShortName: string

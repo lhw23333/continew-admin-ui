@@ -24,9 +24,30 @@
       <a-space v-else direction="vertical" fill :size="16">
         <a-card v-for="channel in detail?.channels" :key="channel.channelCode" :title="channel.channelCode" :bordered="false" class="channel-card">
           <template #extra>
-            <a-tag :color="channelStatusColor(channel.channelFinalStatus)">
-              {{ channel.channelFinalStatus }}
-            </a-tag>
+            <a-space>
+              <a-button
+                v-if="channel.applicationStatus === 'APPROVED'"
+                v-permission="['merchant:onboarding:channel:submit']"
+                size="small"
+                type="primary"
+                :loading="executingApplicationId === channel.applicationId"
+                @click="executeChannel(channel, 'submit')"
+              >
+                提交渠道
+              </a-button>
+              <a-button
+                v-if="channel.applicationStatus === 'CHANNEL_PROCESSING'"
+                v-permission="['merchant:onboarding:channel:query']"
+                size="small"
+                :loading="executingApplicationId === channel.applicationId"
+                @click="executeChannel(channel, 'query')"
+              >
+                查询状态
+              </a-button>
+              <a-tag :color="channelStatusColor(channel.channelFinalStatus)">
+                {{ channel.channelFinalStatus }}
+              </a-tag>
+            </a-space>
           </template>
           <a-descriptions :column="descriptionColumns" bordered>
             <a-descriptions-item label="申请编号">{{ channel.applicationNo }}</a-descriptions-item>
@@ -60,10 +81,11 @@
 </template>
 
 <script setup lang="ts">
+import { Message } from '@arco-design/web-vue'
 import { useWindowSize } from '@vueuse/core'
 import { channelStatusColor, getErrorMessage, merchantStatusMeta } from './utils'
-import type { MerchantDetail, MerchantResp } from '@/apis/merchant/merchant'
-import { getMerchant } from '@/apis/merchant/merchant'
+import type { MerchantChannelSummary, MerchantDetail, MerchantResp } from '@/apis/merchant/merchant'
+import { getMerchant, queryOnboardingChannel, submitOnboardingChannel } from '@/apis/merchant/merchant'
 
 const { width } = useWindowSize()
 const drawerWidth = computed(() => width.value >= 1100 ? 980 : '100%')
@@ -72,6 +94,28 @@ const visible = ref(false)
 const loading = ref(false)
 const detail = ref<MerchantDetail>()
 const errorMessage = ref('')
+const executingApplicationId = ref('')
+
+const loadDetail = async (merchantId: string) => {
+  const { data } = await getMerchant(merchantId)
+  detail.value = data
+}
+
+const executeChannel = async (channel: MerchantChannelSummary, operation: 'submit' | 'query') => {
+  if (!detail.value) return
+  try {
+    executingApplicationId.value = channel.applicationId
+    errorMessage.value = ''
+    const execute = operation === 'submit' ? submitOnboardingChannel : queryOnboardingChannel
+    const { data } = await execute(detail.value.id, channel.applicationId)
+    Message.success(data.safeMessage || (operation === 'submit' ? '渠道提交成功' : '渠道状态已刷新'))
+    await loadDetail(detail.value.id)
+  } catch (error) {
+    errorMessage.value = getErrorMessage(error, operation === 'submit' ? '渠道提交失败' : '渠道查询失败')
+  } finally {
+    executingApplicationId.value = ''
+  }
+}
 
 const onOpen = async (record: MerchantResp) => {
   visible.value = true
@@ -79,8 +123,7 @@ const onOpen = async (record: MerchantResp) => {
   detail.value = undefined
   errorMessage.value = ''
   try {
-    const { data } = await getMerchant(record.id)
-    detail.value = data
+    await loadDetail(record.id)
   } catch (error) {
     errorMessage.value = getErrorMessage(error, '渠道摘要加载失败')
   } finally {
