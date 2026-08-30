@@ -4,6 +4,7 @@
       <div class="panel">
         <Welcome />
       </div>
+      <OperationsWorkbench v-if="isBusinessTenant" class="workbench" />
       <div style="margin-top: 14px">
         <a-grid :cols="24" :col-gap="14" :row-gap="14">
           <a-grid-item :span="24">
@@ -38,14 +39,19 @@
 
 <script setup lang="ts">
 import Welcome from './components/Welcome.vue'
+import OperationsWorkbench from './components/OperationsWorkbench.vue'
 import Project from './components/Project.vue'
 import LatestActivity from './components/LatestActivity.vue'
 import QuickOperation from './components/QuickOperation.vue'
 import Carousel from './components/Carousel.vue'
 import Notice from './components/Notice.vue'
 import Docs from './components/Docs.vue'
+import { useTenantStore } from '@/stores'
 
 defineOptions({ name: 'Workplace' })
+
+const tenantStore = useTenantStore()
+const isBusinessTenant = computed(() => Number(tenantStore.tenantId) > 0)
 </script>
 
 <style scoped lang="scss">
@@ -66,6 +72,9 @@ defineOptions({ name: 'Workplace' })
   background-color: var(--color-bg-2);
   border-radius: 4px;
   overflow: auto;
+}
+.workbench {
+  margin-top: 14px;
 }
 :deep(.panel-border) {
   margin-bottom: 0;
