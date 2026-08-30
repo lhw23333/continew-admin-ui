@@ -61,7 +61,7 @@
     </a-spin>
     <template #footer>
       <a-space v-if="detail">
-        <a-button v-if="detail.task.state === 'TODO'" v-permission="['workflow:task:claim']" type="primary" @click="claim">认领</a-button>
+        <a-button v-if="canClaim" v-permission="['workflow:task:claim']" type="primary" @click="claim">认领</a-button>
         <a-button v-if="detail.task.state === 'CLAIMED' && detail.task.taskDefinitionKey !== 'supplementTask'" v-permission="['workflow:task:claim']" @click="unclaim">取消认领</a-button>
         <a-button v-if="availableReviewActions(detail.task).length" v-permission="['workflow:task:review']" type="primary" @click="reviewModalRef?.onOpen(detail)">审核</a-button>
         <a-button v-if="['reviewTask', 'escalatedReviewTask'].includes(detail.task.taskDefinitionKey) && detail.task.state === 'CLAIMED'" v-permission="['workflow:task:transfer']" @click="transferModalRef?.onOpen(detail)">转派</a-button>
@@ -77,12 +77,14 @@ import { Message } from '@arco-design/web-vue'
 import { useWindowSize } from '@vueuse/core'
 import ReviewActionModal from './ReviewActionModal.vue'
 import TransferModal from './TransferModal.vue'
-import { availableReviewActions, isOverdue, reviewActionLabel, taskStateMeta } from './utils'
+import { availableReviewActions, canClaimTask, isOverdue, reviewActionLabel, taskStateMeta } from './utils'
 import type { WorkflowProcessHistory, WorkflowTaskDetail, WorkflowTaskView } from '@/apis/merchant/workflow'
 import { claimWorkflowTask, getWorkflowHistory, getWorkflowTask, unclaimWorkflowTask } from '@/apis/merchant/workflow'
+import { useUserStore } from '@/stores'
 
 const emit = defineEmits<{ success: [] }>()
 const { width } = useWindowSize()
+const userStore = useUserStore()
 const visible = ref(false)
 const loading = ref(false)
 const taskId = ref('')
@@ -90,6 +92,11 @@ const detail = ref<WorkflowTaskDetail>()
 const history = ref<WorkflowProcessHistory>()
 const reviewModalRef = ref<InstanceType<typeof ReviewActionModal>>()
 const transferModalRef = ref<InstanceType<typeof TransferModal>>()
+const canClaim = computed(() => !!detail.value && canClaimTask(
+  detail.value.task,
+  detail.value.business.applicantUserId,
+  userStore.userInfo.id,
+))
 
 async function load() {
   loading.value = true
