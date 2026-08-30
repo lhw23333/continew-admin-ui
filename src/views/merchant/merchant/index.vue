@@ -21,6 +21,22 @@
           <a-input v-model="queryForm.legalRepresentative" placeholder="法定代表人" allow-clear class="filter-control" />
           <a-input v-model="queryForm.owningAgentId" placeholder="归属代理商 ID" allow-clear class="filter-control" />
           <a-input v-model="queryForm.channelCode" placeholder="渠道编码" allow-clear class="filter-control" />
+          <a-select v-model="queryForm.applicationStatus" placeholder="进件状态" allow-clear class="filter-select">
+            <a-option value="DRAFT">草稿</a-option>
+            <a-option value="SUBMITTED">已提交</a-option>
+            <a-option value="CHANNEL_PROCESSING">渠道处理中</a-option>
+            <a-option value="SUCCEEDED">成功</a-option>
+            <a-option value="FAILED,REJECTED">失败</a-option>
+          </a-select>
+          <a-date-picker
+            v-model="applicationUpdatedTo"
+            show-time
+            allow-clear
+            value-format="YYYY-MM-DDTHH:mm:ss"
+            format="YYYY-MM-DD HH:mm:ss"
+            placeholder="进件截至时间"
+            class="filter-control"
+          />
           <a-select v-model="queryForm.merchantType" placeholder="商户类型" allow-clear class="filter-select">
             <a-option value="ENTERPRISE">企业商户</a-option>
             <a-option value="INDIVIDUAL">个人商户</a-option>
@@ -125,6 +141,7 @@
 <script setup lang="ts">
 import type { TableInstance } from '@arco-design/web-vue'
 import dayjs from 'dayjs'
+import { useRoute } from 'vue-router'
 import ChannelSummaryDrawer from './ChannelSummaryDrawer.vue'
 import LifecycleModal from './LifecycleModal.vue'
 import LimitAdjustmentModal from './LimitAdjustmentModal.vue'
@@ -142,8 +159,13 @@ import has from '@/utils/has'
 defineOptions({ name: 'MerchantMerchant' })
 
 const tenantStore = useTenantStore()
+const route = useRoute()
 const isBusinessTenant = computed(() => Number(tenantStore.tenantId) > 0)
 const [queryForm, resetForm] = useResetReactive<MerchantQuery>({})
+const applicationUpdatedTo = ref(typeof route.query.applicationUpdatedTo === 'string'
+  ? dayjs(route.query.applicationUpdatedTo).format('YYYY-MM-DDTHH:mm:ss')
+  : '')
+if (typeof route.query.applicationStatus === 'string') queryForm.applicationStatus = route.query.applicationStatus
 const onboardingWizardRef = ref<InstanceType<typeof OnboardingWizard>>()
 const createdRange = ref<string[]>([])
 const toApiDateTime = (value?: string) => value ? dayjs(value).format('YYYY-MM-DDTHH:mm:ss') : undefined
@@ -151,6 +173,7 @@ const { tableData: dataList, loading, pagination, search, refresh } = useTable<M
   ...queryForm,
   createdFrom: toApiDateTime(createdRange.value?.[0]),
   createdTo: toApiDateTime(createdRange.value?.[1]),
+  applicationUpdatedTo: applicationUpdatedTo.value || undefined,
   ...page,
 }))
 
@@ -191,6 +214,7 @@ const columns: TableInstance['columns'] = [
 const reset = () => {
   resetForm()
   createdRange.value = []
+  applicationUpdatedTo.value = ''
   search()
 }
 

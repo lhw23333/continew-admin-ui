@@ -135,6 +135,8 @@ export interface MerchantQuery {
   merchantType?: MerchantType
   owningAgentId?: string
   channelCode?: string
+  applicationStatus?: string
+  applicationUpdatedTo?: string
   status?: MerchantStatus
   createdFrom?: string
   createdTo?: string

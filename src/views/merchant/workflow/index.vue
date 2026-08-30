@@ -18,6 +18,20 @@
         <a-space wrap>
           <a-input v-model="queryForm.businessKey" placeholder="业务 Key" allow-clear style="width: 260px" />
           <a-input v-model="queryForm.taskName" placeholder="任务名称" allow-clear style="width: 180px" />
+          <a-select v-model="queryForm.taskDefinitionKey" placeholder="任务节点" allow-clear style="width: 180px">
+            <a-option value="reviewTask">人工审核</a-option>
+            <a-option value="escalatedReviewTask">升级审核</a-option>
+            <a-option value="supplementTask">补件</a-option>
+          </a-select>
+          <a-date-picker
+            v-model="queryForm.dueBefore"
+            show-time
+            allow-clear
+            value-format="YYYY-MM-DDTHH:mm:ss"
+            format="YYYY-MM-DD HH:mm:ss"
+            placeholder="到期截止时间"
+            style="width: 210px"
+          />
           <a-button type="primary" @click="search"><template #icon><icon-search /></template>查询</a-button>
           <a-button @click="reset"><template #icon><icon-refresh /></template>重置</a-button>
         </a-space>
@@ -44,6 +58,7 @@
 <script setup lang="ts">
 import type { TableInstance } from '@arco-design/web-vue'
 import { Message } from '@arco-design/web-vue'
+import dayjs from 'dayjs'
 import { useRoute } from 'vue-router'
 import TaskDetailDrawer from './TaskDetailDrawer.vue'
 import { canClaimTask, isOverdue, taskStateMeta } from './utils'
@@ -60,6 +75,9 @@ const userStore = useUserStore()
 const routeTab = String(route.query.tab || '')
 const activeTab = ref<TabKey>(['todo', 'claimed', 'done'].includes(routeTab) ? routeTab as TabKey : 'todo')
 const [queryForm, resetForm] = useResetReactive<WorkflowTaskQuery>({})
+if (typeof route.query.taskName === 'string') queryForm.taskName = route.query.taskName
+if (typeof route.query.taskDefinitionKey === 'string') queryForm.taskDefinitionKey = route.query.taskDefinitionKey
+if (typeof route.query.dueBefore === 'string') queryForm.dueBefore = dayjs(route.query.dueBefore).format('YYYY-MM-DDTHH:mm:ss')
 const apiByTab = { todo: listTodoTasks, claimed: listClaimedTasks, done: listDoneTasks }
 const { tableData: dataList, loading, pagination, search, refresh } = useTable<WorkflowTaskView>(
   (page) => apiByTab[activeTab.value]({ ...queryForm, ...page }),

@@ -107,6 +107,8 @@ export interface WorkflowTaskQuery {
   processDefinitionKey?: string
   businessKey?: string
   taskName?: string
+  taskDefinitionKey?: string
+  dueBefore?: string
   page?: number
   size?: number
 }
